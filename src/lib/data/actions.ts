@@ -61,9 +61,11 @@ export async function setGeminiApiKey(input: unknown): Promise<ActionResult> {
 
   const admin = createAdminClient();
   const { error } = await admin
-    .from("profiles")
-    .update({ gemini_api_key: parsed.data.apiKey })
-    .eq("id", user.id);
+    .from("user_secrets")
+    .upsert(
+      { user_id: user.id, gemini_api_key: parsed.data.apiKey },
+      { onConflict: "user_id" },
+    );
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/settings");
@@ -76,9 +78,9 @@ export async function clearGeminiApiKey(): Promise<ActionResult> {
 
   const admin = createAdminClient();
   const { error } = await admin
-    .from("profiles")
-    .update({ gemini_api_key: null })
-    .eq("id", user.id);
+    .from("user_secrets")
+    .delete()
+    .eq("user_id", user.id);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/settings");

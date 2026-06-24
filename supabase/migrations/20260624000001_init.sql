@@ -3,8 +3,13 @@
 --
 -- Spec §3 data model. Every table is owned per-user and protected by
 -- Row Level Security: default-deny, owner-only (auth.uid() = user_id).
--- gemini_api_key lives in profiles but is revoked from the client API
--- roles, so it is readable ONLY by server code using the service role.
+--
+-- The user's Gemini API key is "server-only readable": it lives in a
+-- dedicated user_secrets table whose RLS is enabled with ZERO policies, so
+-- no client role can read/write any row regardless of grants. Only the
+-- service-role admin client (which bypasses RLS) can access it. (Column-level
+-- REVOKE on Supabase is unreliable due to grantor mismatch — RLS default-deny
+-- is the robust mechanism.)
 -- ════════════════════════════════════════════════════════════════
 
 -- ── helper: keep updated_at fresh ───────────────────────────────
@@ -34,7 +39,6 @@ create table public.profiles (
   fat_goal            integer check (fat_goal >= 0),
   fiber_goal          integer check (fiber_goal >= 0),
   sodium_goal         integer check (sodium_goal >= 0),
-  gemini_api_key      text,                                       -- server-only (see grants below)
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now()
 );
@@ -50,12 +54,7 @@ create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
 
--- Client roles may touch the row, but NOT the secret column. All
--- gemini_api_key reads/writes go through server code (service role).
 grant select, insert, update, delete on public.profiles to authenticated;
-revoke select (gemini_api_key) on public.profiles from authenticated, anon;
-revoke insert (gemini_api_key) on public.profiles from authenticated, anon;
-revoke update (gemini_api_key) on public.profiles from authenticated, anon;
 
 -- Auto-create a profile row when a user signs up.
 create or replace function public.handle_new_user()
@@ -182,3 +181,21 @@ create index favorite_foods_user_idx
   on public.favorite_foods (user_id);
 
 grant select, insert, update, delete on public.favorite_foods to authenticated;
+
+-- ════════════════════════════════════════════════════════════════
+-- user_secrets — server-only store for the per-user Gemini API key.
+-- RLS is enabled with NO policies → anon/authenticated are denied every
+-- row. Only the service-role admin client (BYPASSRLS) can read/write it.
+-- ════════════════════════════════════════════════════════════════
+create table public.user_secrets (
+  user_id         uuid primary key references auth.users (id) on delete cascade,
+  gemini_api_key  text,
+  updated_at      timestamptz not null default now()
+);
+
+alter table public.user_secrets enable row level security;
+-- (no policies on purpose)
+
+create trigger user_secrets_set_updated_at
+  before update on public.user_secrets
+  for each row execute function public.set_updated_at();

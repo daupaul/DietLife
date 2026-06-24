@@ -10,8 +10,6 @@ import type {
   WeightLog,
 } from "@/types/db";
 
-// Explicit column list — NEVER select '*' on profiles (gemini_api_key is
-// revoked from the client roles; '*' would error).
 const PROFILE_COLUMNS =
   "id, gender, age, height, weight, activity_level, daily_calorie_goal, protein_goal, carbs_goal, fat_goal, fiber_goal, sodium_goal, created_at, updated_at";
 
@@ -38,24 +36,25 @@ export async function hasGeminiApiKey(): Promise<boolean> {
   if (!user) return false;
   const admin = createAdminClient();
   const { data } = await admin
-    .from("profiles")
+    .from("user_secrets")
     .select("gemini_api_key")
-    .eq("id", user.id)
-    .single();
+    .eq("user_id", user.id)
+    .maybeSingle();
   return Boolean(data?.gemini_api_key);
 }
 
 /**
- * The user's Gemini API key — server-only (admin client). Used by the
- * Gemini Server Action in Phase 3.5. Never return this to the client.
+ * The user's Gemini API key — server-only (admin client reads user_secrets,
+ * which is unreadable by client roles via RLS). Used by the Gemini Server
+ * Action in Phase 3.5. Never return this to the client.
  */
 export async function getGeminiApiKey(userId: string): Promise<string | null> {
   const admin = createAdminClient();
   const { data } = await admin
-    .from("profiles")
+    .from("user_secrets")
     .select("gemini_api_key")
-    .eq("id", userId)
-    .single();
+    .eq("user_id", userId)
+    .maybeSingle();
   return data?.gemini_api_key ?? null;
 }
 
