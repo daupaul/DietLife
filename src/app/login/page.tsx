@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Leaf } from "lucide-react";
 import { Button, Card, Input } from "@/components/ui";
 import { signIn, signUp, type AuthState } from "@/lib/auth/actions";
 
@@ -25,11 +26,14 @@ export default function LoginPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <span className="text-5xl" aria-hidden>
-            🐟
+        <div className="mb-7 flex flex-col items-center gap-3 text-center">
+          <span
+            className="bg-accent-soft text-accent flex size-12 items-center justify-center rounded-2xl"
+            aria-hidden
+          >
+            <Leaf className="size-6" strokeWidth={2} />
           </span>
-          <h1 className="type-h1 text-foreground">DietLife 飲控生活</h1>
+          <h1 className="type-display text-foreground">DietLife</h1>
           <p className="type-caption text-muted">
             {isSignin ? "登入以同步你的飲控紀錄" : "建立帳號開始使用"}
           </p>

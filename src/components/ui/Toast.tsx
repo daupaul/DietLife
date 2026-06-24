@@ -29,11 +29,11 @@ const STYLE: Record<
     accent: "text-success",
   },
   error: { icon: XCircle, ring: "border-danger/30", accent: "text-danger" },
-  info: { icon: Info, ring: "border-line", accent: "text-indigo" },
+  info: { icon: Info, ring: "border-line", accent: "text-accent" },
   loading: {
     icon: Loader2,
     ring: "border-line",
-    accent: "text-indigo",
+    accent: "text-accent",
     spin: true,
   },
 };

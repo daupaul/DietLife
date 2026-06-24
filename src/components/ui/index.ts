@@ -16,11 +16,7 @@ export {
   type AnimatedCheckboxProps,
 } from "./AnimatedCheckbox";
 export { TabNav, type TabItem, type TabNavProps } from "./TabNav";
-export {
-  GradientHeader,
-  type GradientHeaderProps,
-  type SyncState,
-} from "./GradientHeader";
+export { AppHeader, type AppHeaderProps, type SyncState } from "./AppHeader";
 export { SectionHeader, type SectionHeaderProps } from "./SectionHeader";
 export { Badge, type BadgeProps } from "./Badge";
 export { ToastProvider, useToast, type ToastType } from "./Toast";

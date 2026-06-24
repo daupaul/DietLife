@@ -4,10 +4,10 @@ type Macro = "protein" | "carbs" | "fat" | "fiber";
 
 // Each macro gets a distinct solid fill (vs ProgressBar's brand gradient).
 const MACRO: Record<Macro, { fill: string; text: string; label: string }> = {
-  protein: { fill: "bg-blue", text: "text-blue", label: "蛋白質" },
+  protein: { fill: "bg-protein", text: "text-protein", label: "蛋白質" },
   carbs: { fill: "bg-carbs", text: "text-carbs", label: "碳水" },
   fat: { fill: "bg-fat", text: "text-fat", label: "脂肪" },
-  fiber: { fill: "bg-success", text: "text-success", label: "纖維" },
+  fiber: { fill: "bg-fiber", text: "text-fiber", label: "纖維" },
 };
 
 export interface MacroBarProps {

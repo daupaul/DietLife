@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Noto_Sans_TC, Geist_Mono } from "next/font/google";
+import { Fraunces, Inter, Noto_Sans_TC, Noto_Serif_TC } from "next/font/google";
 import "./globals.css";
 
-// Sans: Inter (Latin/numerals) + Noto Sans TC (Traditional Chinese).
+// Body sans: Inter (Latin/numerals) + Noto Sans TC (Traditional Chinese).
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -13,15 +13,21 @@ const notoSansTC = Noto_Sans_TC({
   variable: "--font-noto-sans-tc",
   subsets: ["latin"],
   display: "swap",
-  // CJK subsets are huge — fetch on demand rather than preloading.
-  preload: false,
+  preload: false, // CJK subsets are huge — fetch on demand
 });
 
-// Mono: numeric values, dates and times (per spec §2.1).
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Display serif: Fraunces (editorial headings + hero numerals) + Noto Serif TC.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
+});
+
+const notoSerifTC = Noto_Serif_TC({
+  variable: "--font-noto-serif-tc",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#f8fafc",
+  themeColor: "#f6f4ef",
 };
 
 export default function RootLayout({
@@ -47,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-Hant"
-      className={`${inter.variable} ${notoSansTC.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${notoSansTC.variable} ${fraunces.variable} ${notoSerifTC.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground flex min-h-full flex-col">
         {children}

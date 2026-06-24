@@ -53,7 +53,7 @@ const range = (start: number, end: number) =>
 
 // Every field is h-12 for perfect alignment on iOS Safari / Chrome.
 const FIELD =
-  "bg-card border-line h-12 appearance-none rounded-control border px-2 text-center font-mono focus:border-indigo focus-visible:outline-none focus:ring-2 focus:ring-indigo/30";
+  "bg-card border-line h-12 appearance-none rounded-control border px-2 text-center tabular-nums focus:border-accent focus-visible:outline-none focus:ring-2 focus:ring-accent/30";
 
 export function CustomDateTimePicker({
   label,

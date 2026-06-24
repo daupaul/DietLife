@@ -34,13 +34,13 @@ export function TabNav({ items, activeOverride }: TabNavProps) {
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex min-h-11 flex-col items-center justify-center gap-1 py-2 transition-colors",
-                  isActive ? "text-indigo" : "text-muted",
+                  isActive ? "text-accent" : "text-muted",
                 )}
               >
                 <span
                   className={cn(
                     "rounded-pill flex h-7 w-12 items-center justify-center transition-colors",
-                    isActive && "bg-indigo-bg",
+                    isActive && "bg-accent-soft",
                   )}
                 >
                   <Icon className="size-5" strokeWidth={2.5} aria-hidden />

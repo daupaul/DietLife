@@ -49,7 +49,7 @@ export function ProgressBar({
         <div
           className={cn(
             "rounded-pill h-full transition-[width] duration-500",
-            isWarn ? "bg-danger animate-pulse" : "bg-brand-gradient",
+            isWarn ? "bg-danger animate-pulse" : "bg-accent",
           )}
           // Dynamic geometry only — not a design value. All colours/sizing
           // still come from tokens above.

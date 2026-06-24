@@ -23,14 +23,14 @@ export function DayNav({ label, prevDate, nextDate, isToday }: DayNavProps) {
         href={href(prevDate)}
         scroll={false}
         aria-label="前一天"
-        className="text-muted hover:text-indigo flex size-10 items-center justify-center"
+        className="text-muted hover:text-accent flex size-10 items-center justify-center"
       >
         <ChevronLeft className="size-5" strokeWidth={2.5} />
       </Link>
 
       <div className="flex items-center gap-3">
         {!isToday && (
-          <Link href={path} scroll={false} className="type-caption text-indigo">
+          <Link href={path} scroll={false} className="type-caption text-accent">
             回今天
           </Link>
         )}
@@ -50,7 +50,7 @@ export function DayNav({ label, prevDate, nextDate, isToday }: DayNavProps) {
           scroll={false}
           aria-label="後一天"
           className={cn(
-            "text-muted hover:text-indigo flex size-10 items-center justify-center",
+            "text-muted hover:text-accent flex size-10 items-center justify-center",
           )}
         >
           <ChevronRight className="size-5" strokeWidth={2.5} />

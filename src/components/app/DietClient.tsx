@@ -199,7 +199,7 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
     <div className="space-y-4">
       {/* AI estimate */}
       <Card>
-        <SectionHeader title="✨ AI 智慧估算" />
+        <SectionHeader title="智慧估算" />
         <p className="type-caption text-muted mt-1">
           用文字描述或拍照，自動估算營養並填入下方表單。
         </p>
@@ -317,7 +317,7 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
           <AnimatedCheckbox
             checked={saveFav}
             onCheckedChange={setSaveFav}
-            label="⭐ 同步存常用食物"
+            label="同步存為常用食物"
           >
             <Select
               label="歸類到"

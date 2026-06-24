@@ -14,7 +14,7 @@ export interface AnimatedCheckboxProps {
 
 /**
  * Checkbox whose children slide open when checked (grid-rows 0fr→1fr trick,
- * so no fixed height needed). Used for "⭐同步存常用食物" → category dropdown.
+ * so no fixed height needed). Used for "同步存為常用食物" → category dropdown.
  */
 export function AnimatedCheckbox({
   checked,
@@ -29,7 +29,7 @@ export function AnimatedCheckbox({
           className={cn(
             "flex size-6 shrink-0 items-center justify-center rounded-md border transition",
             checked
-              ? "bg-brand-gradient border-transparent text-white"
+              ? "bg-accent border-transparent text-white"
               : "border-line bg-card text-transparent",
           )}
         >

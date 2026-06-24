@@ -6,11 +6,10 @@ type Size = "sm" | "md" | "lg";
 
 // All touch targets >= 44px tall (mobile-first guideline).
 const VARIANTS: Record<Variant, string> = {
-  primary:
-    "bg-brand-gradient text-white shadow-primary active:brightness-95 active:shadow-card",
+  primary: "bg-accent text-white shadow-card active:brightness-95",
   secondary:
     "bg-card text-foreground border border-line shadow-card active:bg-background",
-  ghost: "bg-transparent text-indigo active:bg-indigo-bg",
+  ghost: "bg-transparent text-accent active:bg-accent-soft",
   danger: "bg-danger text-white shadow-card active:brightness-95",
 };
 

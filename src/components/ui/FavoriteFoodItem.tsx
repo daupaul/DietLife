@@ -12,7 +12,7 @@ export interface FavoriteFoodItemProps {
   food: FavoriteFood;
   /** 「填入」— populate the diet form with this food (user can edit before saving). */
   onFill: () => void;
-  /** 「⚡帶入」— immediately create a diet log from this food. */
+  /** 「帶入」— immediately create a diet log from this food. */
   onQuickAdd: () => void;
 }
 
@@ -28,7 +28,7 @@ export function FavoriteFoodItem({
           <span className="type-body-strong text-foreground truncate">
             {food.name}
           </span>
-          <Badge tone="indigo">{food.category}</Badge>
+          <Badge tone="accent">{food.category}</Badge>
         </div>
         <span className="type-data-sm text-muted">{food.calories} kcal</span>
       </div>

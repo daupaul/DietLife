@@ -27,7 +27,7 @@ export function Input({
           className={cn(
             "bg-card border-line rounded-control type-body h-12 w-full border px-3",
             "placeholder:text-subtle",
-            "focus:border-indigo focus:ring-indigo/30 focus:ring-2 focus-visible:outline-none",
+            "focus:border-accent focus:ring-accent/30 focus:ring-2 focus-visible:outline-none",
             error && "border-danger focus:border-danger focus:ring-danger/30",
             suffix && "pr-12",
             className,

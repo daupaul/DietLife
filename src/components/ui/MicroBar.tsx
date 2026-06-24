@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 type Tone = "neutral" | "success" | "danger";
 
 const TONE: Record<Tone, string> = {
-  neutral: "bg-muted",
+  neutral: "bg-accent",
   success: "bg-success",
   danger: "bg-danger",
 };

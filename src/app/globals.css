@@ -3,176 +3,154 @@
 /*
  * ═══════════════════════════════════════════════════════════════
  * DietLife — Design Tokens (SINGLE SOURCE OF TRUTH)
- *
- * All colour / radius / shadow values live here as tokens. Components
- * MUST consume these via Tailwind utilities (bg-indigo, rounded-card,
- * shadow-card…) — never hard-code hex / px in component code.
- *
- * Spacing uses Tailwind's built-in 4px scale (already tokenised).
+ * "Sage Studio" editorial system: warm bone canvas, charcoal-green ink,
+ * one restrained sage accent, serif display + serif hero numbers, hairlines
+ * over shadows. No gradients. Components consume these via Tailwind utilities
+ * (bg-accent, text-ink, rounded-card…) — never hard-code hex / px.
  * ═══════════════════════════════════════════════════════════════
  */
 
 @theme {
   /* ── Surfaces ── */
-  --color-background: #f8fafc; /* app canvas */
-  --color-card: #ffffff; /* cards / sheets */
+  --color-background: #f6f4ef; /* warm bone canvas */
+  --color-card: #fcfbf8; /* surface (barely lighter than canvas) */
 
   /* ── Text (ink) ── */
-  --color-foreground: #0f172a; /* primary */
-  --color-muted: #64748b; /* secondary */
-  --color-subtle: #94a3b8; /* tertiary / placeholder */
+  --color-foreground: #23271f; /* deep warm charcoal-green */
+  --color-muted: #6b6f64; /* secondary */
+  --color-subtle: #9a9c90; /* tertiary / placeholder */
 
   /* ── Lines ── */
-  --color-line: #e2e8f0; /* borders / dividers */
+  --color-line: #e5e2d8; /* hairline border / divider */
 
-  /* ── Brand ── */
-  --color-indigo: #4f46e5;
-  --color-violet: #7c3aed;
-  --color-blue: #2563eb;
+  /* ── Accent (the only brand colour — used as punctuation) ── */
+  --color-accent: #5e6b4f; /* muted sage-olive */
+  --color-accent-soft: #e8ebe0; /* accent tint: chips, fills, active nav */
 
-  /* ── State: success (emerald) ── */
-  --color-success: #059669;
-  --color-success-soft: #34d399;
-  --color-success-bg: #ecfdf5;
+  /* ── State ── */
+  --color-success: #4f7a5b;
+  --color-success-soft: #e2ebe3;
+  --color-warning: #b07d3c;
+  --color-warning-soft: #f0e6d4;
+  --color-danger: #a4503f;
+  --color-danger-soft: #f0e0db;
 
-  /* ── State: sport (sky) ── */
-  --color-sport: #0284c7;
-  --color-sport-bg: #f0f9ff;
+  /* ── Macro accents (MacroBar) — earthy, desaturated ── */
+  --color-protein: #5e6b4f; /* sage */
+  --color-carbs: #c08a3e; /* honey */
+  --color-fat: #b5654a; /* clay */
+  --color-fiber: #6e7b4f; /* olive */
 
-  /* ── State: danger (rose) ── */
-  --color-danger: #e11d48;
-  --color-danger-bg: #fff1f2;
-
-  /* ── Soft tints (StatCard backgrounds) ── */
-  --color-indigo-bg: #eef2ff;
-  --color-violet-bg: #f5f3ff;
-  --color-blue-bg: #eff6ff;
-
-  /* ── Macro accents (MacroBar) ── protein=blue, fiber=emerald reuse
-     the brand/state tokens; carbs + fat need their own hues. */
-  --color-carbs: #d97706; /* amber */
-  --color-fat: #db2777; /* pink */
-
-  /* ── Radii ── (refined: softer, more premium) */
-  --radius-control: 14px; /* inputs / buttons / selects / menus */
-  --radius-card: 20px; /* standard cards */
-  --radius-card-lg: 28px; /* large feature cards */
+  /* ── Radii (calm, consistent) ── */
+  --radius-control: 12px; /* inputs / buttons / selects / menus */
+  --radius-card: 16px; /* standard cards */
+  --radius-card-lg: 20px; /* large feature cards */
   --radius-pill: 9999px; /* badges / pills */
 
-  /* ── Shadows ── (soft, diffuse, layered — quiet depth) */
-  --shadow-card:
-    0 1px 2px 0 rgb(15 23 42 / 0.03), 0 4px 16px -4px rgb(15 23 42 / 0.08);
-  --shadow-float:
-    0 4px 12px -2px rgb(15 23 42 / 0.1), 0 18px 44px -12px rgb(15 23 42 / 0.16);
-  --shadow-nav:
-    0 -1px 2px rgb(15 23 42 / 0.04), 0 -10px 30px -10px rgb(15 23 42 / 0.07);
-  /* coloured glow under primary actions */
-  --shadow-primary: 0 6px 18px -4px rgb(79 70 229 / 0.45);
+  /* ── Shadows (hairlines do the work; shadows stay whisper-soft) ── */
+  --shadow-card: 0 1px 2px 0 rgb(35 39 31 / 0.04);
+  --shadow-float: 0 8px 30px -10px rgb(35 39 31 / 0.18);
+  --shadow-nav: 0 -1px 2px rgb(35 39 31 / 0.04);
 
   /* ── Fonts (wired to next/font CSS vars in layout.tsx) ── */
+  /* Latin precedes TC so numerals/Latin use the chosen face, CJK falls through. */
   --font-sans:
     var(--font-inter), var(--font-noto-sans-tc), ui-sans-serif, system-ui,
     sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif:
+    var(--font-fraunces), var(--font-noto-serif-tc), ui-serif, Georgia, serif;
 }
 
 /*
  * ═══════════════════════════════════════════════════════════════
  * Closed type scale (the ONLY allowed text styles).
- *
- * HARD RULE: text uses these named utilities only — never ad-hoc
- * font-size. `data-*` styles use the mono font for numerals/dates.
- * Form controls are floored at 16px in the base layer (anti iOS-zoom);
- * `type-nav` (11px) is reserved for TabNav labels only.
+ * Serif (Fraunces) for display + hero numbers; sans (Inter) for everything
+ * else. Big serif numerals are the signature. Form controls floored at 16px.
  * ═══════════════════════════════════════════════════════════════
  */
 
+@utility type-hero-num {
+  font-family: var(--font-serif);
+  font-size: 4rem; /* 64px — marquee figure (daily kcal / weight) only */
+  line-height: 1;
+  font-weight: 450;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
 @utility type-display {
-  font-size: 1.875rem; /* 30px */
-  line-height: 1.2;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 2.5rem; /* 40px */
+  line-height: 1.1;
+  font-weight: 450;
   letter-spacing: -0.02em;
 }
 @utility type-h1 {
-  font-size: 1.5rem; /* 24px */
-  line-height: 1.3;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-serif);
+  font-size: 1.875rem; /* 30px */
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.015em;
 }
 @utility type-h2 {
-  font-size: 1.25rem; /* 20px */
-  line-height: 1.35;
+  font-size: 1.375rem; /* 22px */
+  line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 @utility type-title {
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.0625rem; /* 17px */
   line-height: 1.4;
   font-weight: 600;
 }
 @utility type-body {
   font-size: 1rem; /* 16px */
-  line-height: 1.5;
+  line-height: 1.55;
   font-weight: 400;
 }
 @utility type-body-strong {
   font-size: 1rem; /* 16px */
-  line-height: 1.5;
+  line-height: 1.55;
   font-weight: 600;
 }
 @utility type-caption {
-  font-size: 0.875rem; /* 14px */
-  line-height: 1.4;
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.45;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
-@utility type-nav {
-  font-size: 0.6875rem; /* 11px — TabNav labels ONLY */
+@utility type-overline {
+  font-size: 0.6875rem; /* 11px — eyebrows / section labels */
   line-height: 1;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-@utility type-data-lg {
-  font-family: var(--font-mono);
-  font-size: 2.25rem; /* 36px */
-  line-height: 1.05;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
+@utility type-nav {
+  font-size: 0.6875rem; /* 11px — TabNav labels (CJK-safe, no uppercase) */
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 @utility type-data-md {
-  font-family: var(--font-mono);
   font-size: 1.375rem; /* 22px */
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 @utility type-data-sm {
-  font-family: var(--font-mono);
   font-size: 0.875rem; /* 14px */
   line-height: 1.3;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Brand gradient — richer, smoother (GradientHeader, ProgressBar fill). */
-@utility bg-brand-gradient {
-  background-image: linear-gradient(
-    135deg,
-    #4338ca 0%,
-    var(--color-indigo) 28%,
-    var(--color-violet) 64%,
-    var(--color-blue) 100%
-  );
+  font-weight: 500;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 @layer base {
   body {
     font-family: var(--font-sans);
-    /* Mobile-first base size: 16px floor (also see form-control rule). */
-    font-size: 16px;
+    font-size: 16px; /* mobile-first floor (also see form-control rule) */
     color: var(--color-foreground);
     background: var(--color-background);
-    /* Respect iOS safe areas at the page edges. */
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
       env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
@@ -186,11 +164,10 @@
 
   /* Always-visible keyboard focus ring (accessibility). */
   :focus-visible {
-    outline: 2px solid var(--color-indigo);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
 
-  /* Honour reduced-motion: kill non-essential animation/transition. */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

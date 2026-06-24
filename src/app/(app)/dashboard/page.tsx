@@ -5,10 +5,10 @@ import {
   Card,
   MacroBar,
   MicroBar,
-  ProgressBar,
   SectionHeader,
   StatCard,
 } from "@/components/ui";
+import { CalorieRing } from "@/components/app/CalorieRing";
 import { getProfile, listDietLogs, listExerciseLogs } from "@/lib/data/queries";
 import {
   dayRangeForDateStr,
@@ -123,41 +123,31 @@ export default async function DashboardPage({
   const sodium = sumField(diet, "sodium");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {dayNav}
-      {/* Energy balance */}
-      <Card size="lg">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-baseline justify-between gap-4">
-              <span className="type-caption text-muted">目標攝取</span>
-              <span className="type-data-sm text-foreground">{r(goal)}</span>
-            </div>
-            <div className="flex items-baseline justify-between gap-4">
-              <span className="type-caption text-muted">+ 運動增額</span>
-              <span className="type-data-sm text-sport">+{r(burn)}</span>
-            </div>
-            <div className="border-line flex items-baseline justify-between gap-4 border-t pt-1">
-              <span className="type-caption text-muted">可攝取上限</span>
-              <span className="type-data-sm text-foreground">{r(cap)}</span>
-            </div>
+
+      {/* Hero: calorie ring + quiet supporting figures */}
+      <Card size="lg" className="flex flex-col items-center gap-5">
+        <CalorieRing remaining={r(remaining)} pct={pct} />
+        <div className="flex w-full items-stretch justify-center">
+          <div className="flex-1 text-center">
+            <p className="type-overline text-muted">目標</p>
+            <p className="type-data-sm text-foreground mt-1">{r(goal)}</p>
           </div>
-          <div className="text-right">
-            <div className="type-data-lg text-indigo">{r(remaining)}</div>
-            <div className="type-caption text-muted">剩餘可攝取 kcal</div>
+          <div className="bg-line w-px" aria-hidden />
+          <div className="flex-1 text-center">
+            <p className="type-overline text-muted">運動</p>
+            <p className="type-data-sm text-accent mt-1">+{r(burn)}</p>
           </div>
-        </div>
-        <div className="mt-4">
-          <ProgressBar
-            label={`達標 ${r(pct)}%`}
-            value={r(intake)}
-            max={r(cap)}
-            readout={`${r(intake)} / ${r(cap)} kcal`}
-          />
+          <div className="bg-line w-px" aria-hidden />
+          <div className="flex-1 text-center">
+            <p className="type-overline text-muted">上限</p>
+            <p className="type-data-sm text-foreground mt-1">{r(cap)}</p>
+          </div>
         </div>
       </Card>
 
-      {/* Stat cards */}
+      {/* Supporting stats */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           variant="bmr"

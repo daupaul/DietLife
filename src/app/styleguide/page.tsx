@@ -12,12 +12,12 @@ import {
 } from "lucide-react";
 import {
   AnimatedCheckbox,
+  AppHeader,
   Badge,
   Button,
   Card,
   CustomDateTimePicker,
   FavoriteFoodItem,
-  GradientHeader,
   Input,
   MacroBar,
   MicroBar,
@@ -40,36 +40,34 @@ const COLORS: { name: string; cls: string; dark?: boolean }[] = [
   { name: "muted", cls: "bg-muted", dark: true },
   { name: "subtle", cls: "bg-subtle", dark: true },
   { name: "line", cls: "bg-line" },
-  { name: "indigo", cls: "bg-indigo", dark: true },
-  { name: "violet", cls: "bg-violet", dark: true },
-  { name: "blue", cls: "bg-blue", dark: true },
+  { name: "accent", cls: "bg-accent", dark: true },
+  { name: "accent-soft", cls: "bg-accent-soft" },
   { name: "success", cls: "bg-success", dark: true },
   { name: "success-soft", cls: "bg-success-soft" },
-  { name: "sport", cls: "bg-sport", dark: true },
+  { name: "warning", cls: "bg-warning", dark: true },
+  { name: "warning-soft", cls: "bg-warning-soft" },
   { name: "danger", cls: "bg-danger", dark: true },
+  { name: "danger-soft", cls: "bg-danger-soft" },
+  { name: "protein", cls: "bg-protein", dark: true },
   { name: "carbs", cls: "bg-carbs", dark: true },
   { name: "fat", cls: "bg-fat", dark: true },
-  { name: "indigo-bg", cls: "bg-indigo-bg" },
-  { name: "violet-bg", cls: "bg-violet-bg" },
-  { name: "blue-bg", cls: "bg-blue-bg" },
-  { name: "success-bg", cls: "bg-success-bg" },
-  { name: "sport-bg", cls: "bg-sport-bg" },
-  { name: "danger-bg", cls: "bg-danger-bg" },
+  { name: "fiber", cls: "bg-fiber", dark: true },
 ];
 
 const TYPES: { name: string; cls: string }[] = [
-  { name: "type-display", cls: "type-display" },
-  { name: "type-h1", cls: "type-h1" },
+  { name: "type-display (serif)", cls: "type-display" },
+  { name: "type-h1 (serif)", cls: "type-h1" },
   { name: "type-h2", cls: "type-h2" },
   { name: "type-title", cls: "type-title" },
   { name: "type-body", cls: "type-body" },
   { name: "type-body-strong", cls: "type-body-strong" },
   { name: "type-caption", cls: "type-caption" },
+  { name: "type-overline", cls: "type-overline" },
   { name: "type-nav", cls: "type-nav" },
 ];
 
 const DATA_TYPES: { name: string; cls: string }[] = [
-  { name: "type-data-lg", cls: "type-data-lg" },
+  { name: "type-hero-num (serif)", cls: "type-hero-num" },
   { name: "type-data-md", cls: "type-data-md" },
   { name: "type-data-sm", cls: "type-data-sm" },
 ];
@@ -77,7 +75,7 @@ const DATA_TYPES: { name: string; cls: string }[] = [
 const RADII: { name: string; cls: string }[] = [
   { name: "rounded-control (12)", cls: "rounded-control" },
   { name: "rounded-card (16)", cls: "rounded-card" },
-  { name: "rounded-card-lg (24)", cls: "rounded-card-lg" },
+  { name: "rounded-card-lg (20)", cls: "rounded-card-lg" },
   { name: "rounded-pill", cls: "rounded-pill" },
 ];
 
@@ -123,14 +121,10 @@ function Showcase() {
 
   return (
     <div className="pb-16">
-      <GradientHeader
-        title="DietLife 飲控生活"
-        subtitle="設計系統活文件 · Styleguide"
-        sync={SYNC_STATES[sync]}
-      />
+      <AppHeader subtitle="Styleguide" sync={SYNC_STATES[sync]} />
 
       <div className="px-4">
-        <Section title="GradientHeader · 同步指示燈">
+        <Section title="AppHeader · 同步指示燈">
           <div className="flex flex-wrap gap-2">
             {SYNC_STATES.map((s, i) => (
               <Button
@@ -187,9 +181,7 @@ function Showcase() {
                   <span className={cn(t.cls, "text-foreground")}>
                     飲控生活 Aa 123
                   </span>
-                  <span className="type-caption text-subtle font-mono">
-                    {t.name}
-                  </span>
+                  <span className="type-caption text-subtle">{t.name}</span>
                 </div>
               ))}
             </div>
@@ -199,9 +191,7 @@ function Showcase() {
               {DATA_TYPES.map((t) => (
                 <div key={t.name} className="flex items-baseline gap-3">
                   <span className={cn(t.cls, "text-foreground")}>1,850</span>
-                  <span className="type-caption text-subtle font-mono">
-                    {t.name}
-                  </span>
+                  <span className="type-caption text-subtle">{t.name}</span>
                 </div>
               ))}
             </div>
@@ -212,7 +202,7 @@ function Showcase() {
           <div className="grid grid-cols-2 gap-3">
             {RADII.map((r) => (
               <div key={r.name}>
-                <div className={cn("bg-indigo-bg h-16 w-full", r.cls)} />
+                <div className={cn("bg-accent-soft h-16 w-full", r.cls)} />
                 <span className="type-caption text-muted mt-1 block">
                   {r.name}
                 </span>
@@ -361,7 +351,7 @@ function Showcase() {
               value={when}
               onChange={setWhen}
             />
-            <p className="type-caption text-subtle mt-2 font-mono">{when}</p>
+            <p className="type-caption text-subtle mt-2">{when}</p>
           </Card>
         </Section>
 
@@ -370,7 +360,7 @@ function Showcase() {
             <AnimatedCheckbox
               checked={saveFav}
               onCheckedChange={setSaveFav}
-              label="⭐ 同步存常用食物"
+              label="同步存為常用食物"
             >
               <Select label="歸類到" defaultValue="">
                 <option value="" disabled>
@@ -388,14 +378,14 @@ function Showcase() {
         <Section title="Badge / Pill">
           <div className="flex flex-wrap gap-2">
             <Badge tone="neutral">中性</Badge>
-            <Badge tone="indigo">早餐</Badge>
+            <Badge tone="accent">早餐</Badge>
             <Badge tone="success">達標</Badge>
-            <Badge tone="sport">運動</Badge>
+            <Badge tone="warning">運動</Badge>
             <Badge tone="danger">超標</Badge>
           </div>
         </Section>
 
-        <Section title="FavoriteFoodItem（填入 / ⚡帶入）">
+        <Section title="FavoriteFoodItem（填入 / 帶入）">
           <FavoriteFoodItem
             food={{ name: "雞胸肉便當", category: "午餐", calories: 620 }}
             onFill={() => toast({ type: "info", message: "已填入表單" })}

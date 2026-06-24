@@ -1,14 +1,14 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-type Tone = "neutral" | "indigo" | "success" | "sport" | "danger";
+type Tone = "neutral" | "accent" | "success" | "warning" | "danger";
 
 const TONES: Record<Tone, string> = {
   neutral: "bg-background text-muted",
-  indigo: "bg-indigo-bg text-indigo",
-  success: "bg-success-bg text-success",
-  sport: "bg-sport-bg text-sport",
-  danger: "bg-danger-bg text-danger",
+  accent: "bg-accent-soft text-accent",
+  success: "bg-success-soft text-success",
+  warning: "bg-warning-soft text-warning",
+  danger: "bg-danger-soft text-danger",
 };
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

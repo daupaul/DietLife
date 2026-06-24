@@ -67,10 +67,10 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
         <linearGradient id="weightArea" x1="0" y1="0" x2="0" y2="1">
           <stop
             offset="0%"
-            stopColor="var(--color-violet)"
+            stopColor="var(--color-accent)"
             stopOpacity="0.28"
           />
-          <stop offset="100%" stopColor="var(--color-indigo)" stopOpacity="0" />
+          <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -109,7 +109,7 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
       <path
         d={linePath}
         fill="none"
-        stroke="var(--color-indigo)"
+        stroke="var(--color-accent)"
         strokeWidth={3.5}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -121,7 +121,7 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
             cx={c.cx}
             cy={c.cy}
             r={5}
-            fill="var(--color-blue)"
+            fill="var(--color-accent)"
             stroke="#ffffff"
             strokeWidth={2}
           />

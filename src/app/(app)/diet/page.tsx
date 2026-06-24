@@ -55,7 +55,7 @@ export default async function DietPage({
                     <span className="type-body-strong text-foreground truncate">
                       {d.name}
                     </span>
-                    {d.category && <Badge tone="indigo">{d.category}</Badge>}
+                    {d.category && <Badge tone="accent">{d.category}</Badge>}
                   </div>
                   <span className="type-caption text-muted">
                     {formatTime(d.datetime)} · {Math.round(d.calories)} kcal
