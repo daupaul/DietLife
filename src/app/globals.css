@@ -1,37 +1,198 @@
 @import "tailwindcss";
 
 /*
- * ─────────────────────────────────────────────────────────────
- * DietLife — base layer only (Phase 0 skeleton).
+ * ═══════════════════════════════════════════════════════════════
+ * DietLife — Design Tokens (SINGLE SOURCE OF TRUTH)
  *
- * The FULL design-token system (brand/state palettes, radii, shadows,
- * spacing scale) and the closed type scale (display/h1/h2/title/body/
- * caption/data-lg…) are defined in PHASE 1 as the single source of truth.
- * Keep this file minimal until then — do not scatter ad-hoc values here.
- * ─────────────────────────────────────────────────────────────
+ * All colour / radius / shadow values live here as tokens. Components
+ * MUST consume these via Tailwind utilities (bg-indigo, rounded-card,
+ * shadow-card…) — never hard-code hex / px in component code.
+ *
+ * Spacing uses Tailwind's built-in 4px scale (already tokenised).
+ * ═══════════════════════════════════════════════════════════════
  */
 
-:root {
-  /* App canvas + default text (spec §2.1: background #f8fafc). */
-  --background: #f8fafc;
-  --foreground: #0f172a;
-}
+@theme {
+  /* ── Surfaces ── */
+  --color-background: #f8fafc; /* app canvas */
+  --color-card: #ffffff; /* cards / sheets */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  /* Sans = Inter + Noto Sans TC; mono = Geist Mono (numerals/dates). */
+  /* ── Text (ink) ── */
+  --color-foreground: #0f172a; /* primary */
+  --color-muted: #64748b; /* secondary */
+  --color-subtle: #94a3b8; /* tertiary / placeholder */
+
+  /* ── Lines ── */
+  --color-line: #e2e8f0; /* borders / dividers */
+
+  /* ── Brand ── */
+  --color-indigo: #4f46e5;
+  --color-violet: #7c3aed;
+  --color-blue: #2563eb;
+
+  /* ── State: success (emerald) ── */
+  --color-success: #059669;
+  --color-success-soft: #34d399;
+  --color-success-bg: #ecfdf5;
+
+  /* ── State: sport (sky) ── */
+  --color-sport: #0284c7;
+  --color-sport-bg: #f0f9ff;
+
+  /* ── State: danger (rose) ── */
+  --color-danger: #e11d48;
+  --color-danger-bg: #fff1f2;
+
+  /* ── Soft tints (StatCard backgrounds) ── */
+  --color-indigo-bg: #eef2ff;
+  --color-violet-bg: #f5f3ff;
+  --color-blue-bg: #eff6ff;
+
+  /* ── Macro accents (MacroBar) ── protein=blue, fiber=emerald reuse
+     the brand/state tokens; carbs + fat need their own hues. */
+  --color-carbs: #d97706; /* amber */
+  --color-fat: #db2777; /* pink */
+
+  /* ── Radii ── */
+  --radius-control: 12px; /* inputs / buttons / selects / menus */
+  --radius-card: 16px; /* standard cards */
+  --radius-card-lg: 24px; /* large feature cards */
+  --radius-pill: 9999px; /* badges / pills */
+
+  /* ── Shadows ── */
+  --shadow-card:
+    0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --shadow-float:
+    0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.08);
+  --shadow-nav:
+    0 -1px 3px rgb(15 23 42 / 0.05), 0 -8px 24px rgb(15 23 42 / 0.06);
+
+  /* ── Fonts (wired to next/font CSS vars in layout.tsx) ── */
   --font-sans:
     var(--font-inter), var(--font-noto-sans-tc), ui-sans-serif, system-ui,
     sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-body {
-  font-family: var(--font-sans);
-  /* Mobile-first base size: 16px floor prevents iOS focus auto-zoom. */
-  font-size: 16px;
-  /* Respect iOS safe areas at the page edges. */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
+/*
+ * ═══════════════════════════════════════════════════════════════
+ * Closed type scale (the ONLY allowed text styles).
+ *
+ * HARD RULE: text uses these named utilities only — never ad-hoc
+ * font-size. `data-*` styles use the mono font for numerals/dates.
+ * Form controls are floored at 16px in the base layer (anti iOS-zoom);
+ * `type-nav` (11px) is reserved for TabNav labels only.
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+@utility type-display {
+  font-size: 1.875rem; /* 30px */
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+@utility type-h1 {
+  font-size: 1.5rem; /* 24px */
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+@utility type-h2 {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+@utility type-title {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.4;
+  font-weight: 600;
+}
+@utility type-body {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+  font-weight: 400;
+}
+@utility type-body-strong {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+  font-weight: 600;
+}
+@utility type-caption {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.4;
+  font-weight: 500;
+}
+@utility type-nav {
+  font-size: 0.6875rem; /* 11px — TabNav labels ONLY */
+  line-height: 1;
+  font-weight: 600;
+}
+@utility type-data-lg {
+  font-family: var(--font-mono);
+  font-size: 2.25rem; /* 36px */
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+@utility type-data-md {
+  font-family: var(--font-mono);
+  font-size: 1.375rem; /* 22px */
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+@utility type-data-sm {
+  font-family: var(--font-mono);
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+/* Brand gradient (GradientHeader, ProgressBar fill, etc.) */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-indigo) 0%,
+    var(--color-violet) 55%,
+    var(--color-blue) 100%
+  );
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    /* Mobile-first base size: 16px floor (also see form-control rule). */
+    font-size: 16px;
+    color: var(--color-foreground);
+    background: var(--color-background);
+    /* Respect iOS safe areas at the page edges. */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* iOS auto-zooms when focusing a control < 16px — pin the floor. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Always-visible keyboard focus ring (accessibility). */
+  :focus-visible {
+    outline: 2px solid var(--color-indigo);
+    outline-offset: 2px;
+  }
+
+  /* Honour reduced-motion: kill non-essential animation/transition. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
