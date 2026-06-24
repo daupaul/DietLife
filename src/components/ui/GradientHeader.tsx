@@ -27,21 +27,29 @@ export function GradientHeader({
 }: GradientHeaderProps) {
   const { icon: Icon, label, dot, spin } = SYNC[sync];
   return (
-    <header className="bg-brand-gradient rounded-b-card-lg px-5 py-5 text-white">
-      <div className="mx-auto flex max-w-md items-center justify-between gap-3">
+    <header className="bg-brand-gradient rounded-b-card-lg shadow-float relative overflow-hidden px-5 pt-6 pb-7 text-white">
+      {/* soft light sheen */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_90%_at_85%_-10%,rgba(255,255,255,0.28),transparent_55%)]"
+        aria-hidden
+      />
+      <div className="relative mx-auto flex max-w-md items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-3xl" aria-hidden>
+          <span
+            className="flex size-11 items-center justify-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/25 backdrop-blur-sm"
+            aria-hidden
+          >
             🐟
           </span>
           <div>
             <h1 className="type-h1">{title}</h1>
             {subtitle && (
-              <p className="type-caption text-white/80">{subtitle}</p>
+              <p className="type-caption text-white/75">{subtitle}</p>
             )}
           </div>
         </div>
         <div
-          className="rounded-pill flex items-center gap-1.5 bg-white/15 px-2.5 py-1"
+          className="rounded-pill flex items-center gap-1.5 bg-white/15 px-2.5 py-1 ring-1 ring-white/20 backdrop-blur-sm"
           role="status"
           aria-label={`雲端同步狀態：${label}`}
         >

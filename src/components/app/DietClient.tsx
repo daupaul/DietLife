@@ -211,7 +211,7 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
           />
           <div className="flex gap-2">
             <Button
-              fullWidth
+              className="flex-1"
               onClick={estimateText}
               disabled={aiPending || !aiText.trim()}
             >
@@ -219,6 +219,7 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
             </Button>
             <Button
               variant="secondary"
+              className="shrink-0"
               onClick={() => fileRef.current?.click()}
               disabled={aiPending}
             >

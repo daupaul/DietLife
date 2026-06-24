@@ -6,10 +6,12 @@ type Size = "sm" | "md" | "lg";
 
 // All touch targets >= 44px tall (mobile-first guideline).
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-brand-gradient text-white shadow-card active:brightness-95",
-  secondary: "bg-card text-foreground border border-line active:bg-background",
+  primary:
+    "bg-brand-gradient text-white shadow-primary active:brightness-95 active:shadow-card",
+  secondary:
+    "bg-card text-foreground border border-line shadow-card active:bg-background",
   ghost: "bg-transparent text-indigo active:bg-indigo-bg",
-  danger: "bg-danger text-white active:brightness-95",
+  danger: "bg-danger text-white shadow-card active:brightness-95",
 };
 
 const SIZES: Record<Size, string> = {
@@ -36,7 +38,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "rounded-control inline-flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50",
+        "rounded-control inline-flex items-center justify-center gap-2 whitespace-nowrap transition active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50",
         VARIANTS[variant],
         SIZES[size],
         fullWidth && "w-full",

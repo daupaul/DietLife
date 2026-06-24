@@ -10,8 +10,8 @@ export function Card({ size = "default", className, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-card shadow-card",
-        size === "lg" ? "rounded-card-lg p-6" : "rounded-card p-4",
+        "bg-card border-line shadow-card border",
+        size === "lg" ? "rounded-card-lg p-6" : "rounded-card p-5",
         className,
       )}
       {...props}

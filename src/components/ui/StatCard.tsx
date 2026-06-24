@@ -22,12 +22,21 @@ export interface StatCardProps {
 export function StatCard({ variant, label, value, unit, icon }: StatCardProps) {
   const { bg, accent } = STAT[variant];
   return (
-    <div className={cn("rounded-card p-4", bg)}>
+    <div className={cn("rounded-card border-line/60 border p-4", bg)}>
       <div className="flex items-center justify-between">
         <span className="type-caption text-muted">{label}</span>
-        {icon ? <span className={accent}>{icon}</span> : null}
+        {icon ? (
+          <span
+            className={cn(
+              "ring-line flex size-7 items-center justify-center rounded-xl bg-white/70 ring-1",
+              accent,
+            )}
+          >
+            {icon}
+          </span>
+        ) : null}
       </div>
-      <div className="mt-1 flex items-baseline gap-1">
+      <div className="mt-2 flex items-baseline gap-1">
         <span className={cn("type-data-md", accent)}>{value}</span>
         {unit ? <span className="type-caption text-muted">{unit}</span> : null}
       </div>

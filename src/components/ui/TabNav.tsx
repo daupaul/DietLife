@@ -33,11 +33,18 @@ export function TabNav({ items, activeOverride }: TabNavProps) {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex min-h-11 flex-col items-center justify-center gap-0.5 py-2 transition-colors",
+                  "flex min-h-11 flex-col items-center justify-center gap-1 py-2 transition-colors",
                   isActive ? "text-indigo" : "text-muted",
                 )}
               >
-                <Icon className="size-6" strokeWidth={2.5} aria-hidden />
+                <span
+                  className={cn(
+                    "rounded-pill flex h-7 w-12 items-center justify-center transition-colors",
+                    isActive && "bg-indigo-bg",
+                  )}
+                >
+                  <Icon className="size-5" strokeWidth={2.5} aria-hidden />
+                </span>
                 <span className="type-nav">{label}</span>
               </Link>
             </li>
