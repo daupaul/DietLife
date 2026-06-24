@@ -5,12 +5,12 @@ export interface WeightPoint {
   weight: number;
 }
 
-// viewBox geometry (these are layout coordinates, not design tokens).
+// viewBox geometry (layout coordinates, not design tokens).
 const VBW = 320;
 const VBH = 200;
-const PAD_L = 12;
+const PAD_L = 34; // room for Y-axis (weight) labels
 const PAD_R = 12;
-const PAD_T = 16;
+const PAD_T = 18;
 const PAD_B = 28;
 const PLOT_W = VBW - PAD_L - PAD_R;
 const PLOT_H = VBH - PAD_T - PAD_B;
@@ -18,8 +18,8 @@ const BOTTOM = PAD_T + PLOT_H;
 
 /**
  * Weight trend line chart (spec §2.3): indigo stroke 3.5, white-bordered
- * blue node r=5, violet→indigo area gradient, Y axis auto-scaled to extremes,
- * X axis MM/DD. Pure SVG, no client JS. Expects points ascending by time.
+ * blue node r=5, violet→indigo area gradient, auto-scaled Y axis with weight
+ * (kg) tick labels + gridlines, MM/DD X axis. Pure SVG. Points ascending.
  */
 export function WeightChart({ points }: { points: WeightPoint[] }) {
   const data = [...points].sort(
@@ -38,6 +38,8 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
     n <= 1 ? PAD_L + PLOT_W / 2 : PAD_L + (PLOT_W * i) / (n - 1);
   const y = (w: number) => PAD_T + PLOT_H * (1 - (w - lo) / (hi - lo));
 
+  const yTicks = range === 0 ? [min] : [max, (max + min) / 2, min];
+
   const coords = data.map((d, i) => ({ cx: x(i), cy: y(d.weight), d }));
   const linePath = coords
     .map(
@@ -51,7 +53,6 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
         ` L ${coords[n - 1].cx.toFixed(1)} ${BOTTOM} Z`
       : "";
 
-  // Label up to ~6 X ticks (always include the last point).
   const step = Math.max(1, Math.ceil(n / 6));
   const showLabel = (i: number) => i % step === 0 || i === n - 1;
 
@@ -60,7 +61,7 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
       viewBox={`0 0 ${VBW} ${VBH}`}
       className="h-auto w-full"
       role="img"
-      aria-label="體重趨勢圖"
+      aria-label="體重趨勢圖（公斤）"
     >
       <defs>
         <linearGradient id="weightArea" x1="0" y1="0" x2="0" y2="1">
@@ -72,6 +73,36 @@ export function WeightChart({ points }: { points: WeightPoint[] }) {
           <stop offset="100%" stopColor="var(--color-indigo)" stopOpacity="0" />
         </linearGradient>
       </defs>
+
+      {/* Y axis unit */}
+      <text x={2} y={12} className="fill-subtle [font-size:9px]">
+        kg
+      </text>
+
+      {/* Y gridlines + weight tick labels */}
+      {yTicks.map((tv, i) => {
+        const yy = y(tv);
+        return (
+          <g key={`ytick-${i}`}>
+            <line
+              x1={PAD_L}
+              x2={PAD_L + PLOT_W}
+              y1={yy}
+              y2={yy}
+              stroke="var(--color-line)"
+              strokeWidth={1}
+            />
+            <text
+              x={PAD_L - 4}
+              y={yy + 3}
+              textAnchor="end"
+              className="fill-muted [font-size:9px]"
+            >
+              {tv.toFixed(1)}
+            </text>
+          </g>
+        );
+      })}
 
       {areaPath && <path d={areaPath} fill="url(#weightArea)" />}
 

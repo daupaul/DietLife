@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { Camera } from "lucide-react";
 import {
   AnimatedCheckbox,
   Button,
@@ -13,9 +14,15 @@ import {
   useToast,
 } from "@/components/ui";
 import { addDietLog, addFavoriteFood } from "@/lib/data/actions";
+import {
+  estimateFoodFromImage,
+  estimateFoodFromText,
+} from "@/lib/data/gemini.actions";
 import { MEAL_CATEGORIES } from "@/lib/constants";
 import { taipeiNowInput } from "@/lib/datetime";
 import { useDatetimeField } from "@/lib/useDatetimeField";
+import type { ActionResult } from "@/lib/data/types";
+import type { NutritionEstimate } from "@/lib/gemini/estimate";
 import type { FavoriteFood } from "@/types/db";
 
 const EMPTY = {
@@ -45,6 +52,63 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
   const [keyword, setKeyword] = useState("");
   const [filterCat, setFilterCat] = useState("");
   const [pending, start] = useTransition();
+
+  // AI estimate
+  const [aiText, setAiText] = useState("");
+  const [aiPending, startAi] = useTransition();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const fillFromEstimate = (est: NutritionEstimate) => {
+    const n = (v: number) => String(Math.round(v));
+    setForm({
+      name: est.name ?? "",
+      category: "",
+      calories: n(est.calories),
+      protein: n(est.protein),
+      carbs: n(est.carbs),
+      fat: n(est.fat),
+      fiber: n(est.fiber),
+      sodium: n(est.sodium),
+    });
+  };
+
+  const handleEstimate = (res: ActionResult<NutritionEstimate>) => {
+    if (res.ok && res.data) {
+      fillFromEstimate(res.data);
+      toast({ type: "success", message: `已估算：${res.data.name}` });
+    } else {
+      toast({ type: "error", message: res.ok ? "估算失敗" : res.error });
+    }
+  };
+
+  const estimateText = () =>
+    startAi(async () =>
+      handleEstimate(await estimateFoodFromText({ description: aiText })),
+    );
+
+  const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast({ type: "error", message: "僅支援 JPG / PNG / WebP" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ type: "error", message: "圖片需小於 5MB" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = String(reader.result).split(",")[1] ?? "";
+      startAi(async () =>
+        handleEstimate(
+          await estimateFoodFromImage({ mimeType: file.type, base64 }),
+        ),
+      );
+    };
+    reader.readAsDataURL(file);
+  };
 
   const set =
     (k: keyof FormState) =>
@@ -133,6 +197,46 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
 
   return (
     <div className="space-y-4">
+      {/* AI estimate */}
+      <Card>
+        <SectionHeader title="✨ AI 智慧估算" />
+        <p className="type-caption text-muted mt-1">
+          用文字描述或拍照，自動估算營養並填入下方表單。
+        </p>
+        <div className="mt-3 space-y-3">
+          <Input
+            placeholder="例如：一個滷雞腿便當"
+            value={aiText}
+            onChange={(e) => setAiText(e.target.value)}
+          />
+          <div className="flex gap-2">
+            <Button
+              fullWidth
+              onClick={estimateText}
+              disabled={aiPending || !aiText.trim()}
+            >
+              {aiPending ? "估算中…" : "文字估算"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => fileRef.current?.click()}
+              disabled={aiPending}
+            >
+              <Camera className="size-4" strokeWidth={2.5} />
+              照片
+            </Button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={onPhoto}
+          />
+        </div>
+      </Card>
+
       {/* Add form */}
       <Card>
         <SectionHeader title="新增飲食" />

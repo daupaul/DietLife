@@ -1,27 +1,51 @@
+import { DayNav } from "@/components/app/DayNav";
 import { DeleteButton } from "@/components/app/DeleteButton";
 import { ExerciseForm } from "@/components/app/ExerciseForm";
 import { Card, SectionHeader } from "@/components/ui";
 import { deleteExerciseLog } from "@/lib/data/actions";
 import { listExerciseLogs } from "@/lib/data/queries";
-import { taipeiDayRange, formatTime } from "@/lib/datetime";
+import {
+  dayRangeForDateStr,
+  formatDayLabel,
+  formatTime,
+  isValidDateStr,
+  shiftDateStr,
+  taipeiTodayStr,
+} from "@/lib/datetime";
 
-export default async function ExercisePage() {
-  const { from, to } = taipeiDayRange();
-  const today = await listExerciseLogs({ from, to });
+export default async function ExercisePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const sp = await searchParams;
+  const today = taipeiTodayStr();
+  const date = isValidDateStr(sp.date) && sp.date <= today ? sp.date : today;
+  const isToday = date === today;
+  const { from, to } = dayRangeForDateStr(date);
+
+  const logs = await listExerciseLogs({ from, to });
 
   return (
     <div className="space-y-4">
       <ExerciseForm />
 
+      <DayNav
+        label={formatDayLabel(date)}
+        prevDate={shiftDateStr(date, -1)}
+        nextDate={shiftDateStr(date, 1)}
+        isToday={isToday}
+      />
+
       <Card>
-        <SectionHeader title="今日運動" />
-        {today.length === 0 ? (
+        <SectionHeader title={`${formatDayLabel(date)}運動`} />
+        {logs.length === 0 ? (
           <p className="type-caption text-muted py-4 text-center">
-            今天還沒有運動紀錄。
+            這天沒有運動紀錄。
           </p>
         ) : (
           <ul className="divide-line mt-2 divide-y">
-            {today.map((e) => (
+            {logs.map((e) => (
               <li key={e.id} className="flex items-center gap-3 py-2">
                 <div className="min-w-0 flex-1">
                   <span className="type-body-strong text-foreground block truncate">

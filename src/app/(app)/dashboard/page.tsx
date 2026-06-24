@@ -10,7 +10,14 @@ import {
   StatCard,
 } from "@/components/ui";
 import { getProfile, listDietLogs, listExerciseLogs } from "@/lib/data/queries";
-import { taipeiDayRange } from "@/lib/datetime";
+import {
+  dayRangeForDateStr,
+  formatDayLabel,
+  isValidDateStr,
+  shiftDateStr,
+  taipeiTodayStr,
+} from "@/lib/datetime";
+import { DayNav } from "@/components/app/DayNav";
 import {
   achievementPct,
   bmr,
@@ -21,8 +28,17 @@ import {
 
 const r = Math.round;
 
-export default async function DashboardPage() {
-  const { from, to } = taipeiDayRange();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const sp = await searchParams;
+  const today = taipeiTodayStr();
+  const date = isValidDateStr(sp.date) && sp.date <= today ? sp.date : today;
+  const isToday = date === today;
+  const { from, to } = dayRangeForDateStr(date);
+
   const [profile, diet, exercise] = await Promise.all([
     getProfile(),
     listDietLogs({ from, to }),
@@ -31,6 +47,15 @@ export default async function DashboardPage() {
 
   const intake = sumField(diet, "calories");
   const burn = sumField(exercise, "calories_burned");
+
+  const dayNav = (
+    <DayNav
+      label={formatDayLabel(date)}
+      prevDate={shiftDateStr(date, -1)}
+      nextDate={shiftDateStr(date, 1)}
+      isToday={isToday}
+    />
+  );
 
   const complete = Boolean(
     profile?.gender &&
@@ -44,6 +69,7 @@ export default async function DashboardPage() {
   if (!complete) {
     return (
       <div className="space-y-4">
+        {dayNav}
         <Card size="lg">
           <h2 className="type-h2 text-foreground">先完成個人設定</h2>
           <p className="type-body text-muted mt-2">
@@ -98,6 +124,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4">
+      {dayNav}
       {/* Energy balance */}
       <Card size="lg">
         <div className="flex items-start justify-between gap-4">
@@ -148,7 +175,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           variant="intake"
-          label="今日攝取"
+          label="攝取"
           value={r(intake)}
           unit="kcal"
           icon={<Utensils className="size-4" strokeWidth={2.5} />}
