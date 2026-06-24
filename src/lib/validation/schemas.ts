@@ -1,8 +1,5 @@
 import { z } from "zod";
-
-// Meal categories (spec §2). Kept here as the single source for forms + validation.
-export const MEAL_CATEGORIES = ["早餐", "午餐", "晚餐", "點心"] as const;
-export type MealCategory = (typeof MEAL_CATEGORIES)[number];
+import { MEAL_CATEGORIES } from "@/lib/constants";
 
 // Local datetime string from CustomDateTimePicker ("YYYY-MM-DDTHH:mm") or any
 // Date-parseable value. Server converts to ISO before persisting.
