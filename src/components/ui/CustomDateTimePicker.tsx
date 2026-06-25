@@ -62,7 +62,7 @@ export function CustomDateTimePicker({
 }: CustomDateTimePickerProps) {
   const p = parse(value);
   const thisYear = new Date().getFullYear();
-  const years = range(thisYear - 5, thisYear + 1);
+  const years = range(thisYear - 5, thisYear + 5);
   const days = range(1, daysInMonth(p?.year ?? thisYear, p?.month ?? 1));
 
   // First interaction from an empty state seeds "now" then applies the change.

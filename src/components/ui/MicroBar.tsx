@@ -42,7 +42,7 @@ export function MicroBar({
             isWarn ? "text-danger" : "text-foreground",
           )}
         >
-          {value}
+          {value} / {max}
           {unit ? ` ${unit}` : ""}
         </span>
       </div>
