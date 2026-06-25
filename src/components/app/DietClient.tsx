@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Camera } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import {
   AnimatedCheckbox,
   Button,
@@ -14,10 +14,7 @@ import {
   useToast,
 } from "@/components/ui";
 import { addDietLog, addFavoriteFood } from "@/lib/data/actions";
-import {
-  estimateFoodFromImage,
-  estimateFoodFromText,
-} from "@/lib/data/gemini.actions";
+import { estimateFood } from "@/lib/data/gemini.actions";
 import { MEAL_CATEGORIES } from "@/lib/constants";
 import { taipeiNowInput } from "@/lib/datetime";
 import { useDatetimeField } from "@/lib/useDatetimeField";
@@ -83,8 +80,9 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
   const [filterCat, setFilterCat] = useState("");
   const [pending, start] = useTransition();
 
-  // AI estimate
+  // AI estimate — text and/or photo, sent together for best accuracy
   const [aiText, setAiText] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null); // resized base64
   const [aiPending, startAi] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -111,11 +109,7 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
     }
   };
 
-  const estimateText = () =>
-    startAi(async () =>
-      handleEstimate(await estimateFoodFromText({ description: aiText })),
-    );
-
+  // Attach a photo (downscaled in the browser) — does not estimate yet.
   const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -126,17 +120,28 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
     }
     startAi(async () => {
       try {
-        // Downscale in the browser so the payload stays well under the Server
-        // Action body limit (and Gemini gets a cheaper, sufficient image).
-        const base64 = await resizeToBase64(file, 1024, 0.8);
-        handleEstimate(
-          await estimateFoodFromImage({ mimeType: "image/jpeg", base64 }),
-        );
+        setPhoto(await resizeToBase64(file, 1024, 0.8));
+        toast({ type: "info", message: "已附上照片，可再補充文字後估算" });
       } catch {
         toast({ type: "error", message: "圖片處理失敗，請換一張試試" });
       }
     });
   };
+
+  // Estimate from text + photo together (whichever is provided).
+  const runEstimate = () =>
+    startAi(async () => {
+      if (!aiText.trim() && !photo) {
+        toast({ type: "error", message: "請輸入描述或附上照片" });
+        return;
+      }
+      const res = await estimateFood({
+        description: aiText.trim() || undefined,
+        ...(photo ? { mimeType: "image/jpeg", base64: photo } : {}),
+      });
+      handleEstimate(res);
+      if (res.ok) setPhoto(null);
+    });
 
   const set =
     (k: keyof FormState) =>
@@ -229,32 +234,50 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
       <Card>
         <SectionHeader title="智慧估算" />
         <p className="type-caption text-muted mt-1">
-          用文字描述或拍照，自動估算營養並填入下方表單。
+          可同時用文字描述＋照片，估得更準（文字幫忙辨識食物）。
         </p>
         <div className="mt-3 space-y-3">
           <Input
-            placeholder="例如：一個滷雞腿便當"
+            placeholder="例如：一個滷雞腿便當（少飯）"
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
           />
-          <div className="flex gap-2">
-            <Button
-              className="flex-1"
-              onClick={estimateText}
-              disabled={aiPending || !aiText.trim()}
-            >
-              {aiPending ? "估算中…" : "文字估算"}
-            </Button>
+
+          {photo ? (
+            <div className="border-line rounded-control flex items-center justify-between border px-3 py-2">
+              <span className="type-caption text-muted flex items-center gap-1.5">
+                <Camera className="size-4" strokeWidth={2.5} />
+                已附上照片
+              </span>
+              <button
+                type="button"
+                onClick={() => setPhoto(null)}
+                aria-label="移除照片"
+                className="text-subtle hover:text-danger flex size-8 items-center justify-center"
+              >
+                <X className="size-4" strokeWidth={2.5} />
+              </button>
+            </div>
+          ) : (
             <Button
               variant="secondary"
-              className="shrink-0"
+              fullWidth
               onClick={() => fileRef.current?.click()}
               disabled={aiPending}
             >
               <Camera className="size-4" strokeWidth={2.5} />
-              照片
+              附上照片（可選）
             </Button>
-          </div>
+          )}
+
+          <Button
+            fullWidth
+            onClick={runEstimate}
+            disabled={aiPending || (!aiText.trim() && !photo)}
+          >
+            {aiPending ? "估算中…" : "估算並填入"}
+          </Button>
+
           <input
             ref={fileRef}
             type="file"

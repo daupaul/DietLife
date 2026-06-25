@@ -128,29 +128,41 @@ async function call(
   throw lastErr;
 }
 
-export async function estimateFromText(
-  apiKey: string,
-  description: string,
-): Promise<NutritionEstimate> {
-  return (await call(
-    apiKey,
-    [{ text: `食物描述：${description}` }],
-    NUTRITION_SYSTEM,
-    NUTRITION_SCHEMA,
-  )) as NutritionEstimate;
+export interface EstimateInput {
+  description?: string;
+  image?: { base64: string; mimeType: string };
 }
 
-export async function estimateFromImage(
+/** Estimate nutrition from text, photo, or BOTH (photo + text is most accurate). */
+export async function estimateFood(
   apiKey: string,
-  base64: string,
-  mimeType: string,
+  input: EstimateInput,
 ): Promise<NutritionEstimate> {
+  const parts: Part[] = [];
+  if (input.image) {
+    parts.push({
+      inline_data: {
+        mime_type: input.image.mimeType,
+        data: input.image.base64,
+      },
+    });
+  }
+  const desc = input.description?.trim();
+  let instruction: string;
+  if (input.image && desc) {
+    instruction =
+      `這是一份食物的照片，搭配使用者的文字補充：「${desc}」。` +
+      "請以文字補充協助辨識正確品項，結合照片估算「單份」營養成分。";
+  } else if (input.image) {
+    instruction = "請估算這張食物照片的單份營養成分。";
+  } else {
+    instruction = `食物描述：${desc ?? ""}`;
+  }
+  parts.push({ text: instruction });
+
   return (await call(
     apiKey,
-    [
-      { inline_data: { mime_type: mimeType, data: base64 } },
-      { text: "請估算這張食物照片的單份營養成分。" },
-    ],
+    parts,
     NUTRITION_SYSTEM,
     NUTRITION_SCHEMA,
   )) as NutritionEstimate;
