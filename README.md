@@ -2,6 +2,8 @@
 
 雲端同步的飲食控制與體重追蹤 app，**手機優先**。本專案為既有 `index.html` 原型的正式重構版。
 
+**線上版**：https://dietlife.vercel.app　·　部署細節見 [`DEPLOY.md`](./DEPLOY.md)
+
 > **唯一真實來源（Source of Truth）**
 > - 視覺、資料模型、計算邏輯、功能行為 → 交接規格書
 > - 技術架構 → 重構 prompt（本 README 的架構章節即其落地）
@@ -14,7 +16,8 @@
 | -------- | ---------------------------------------------------------- |
 | 框架     | Next.js 16（App Router）+ TypeScript（strict）             |
 | 樣式     | Tailwind CSS v4 + CSS 變數做 design token                  |
-| 後端/DB  | Supabase（Postgres + Auth + Row Level Security）           |
+| 後端/DB  | Supabase（Postgres，純資料庫）+ Row Level Security 防線     |
+| 認證     | 自訂帳號密碼（`app_users`，scrypt 雜湊 + 簽章 JWT cookie）   |
 | 部署     | Vercel                                                     |
 | 套件管理 | pnpm（版本由 `pnpm-lock.yaml` 鎖定）                       |
 
@@ -90,8 +93,8 @@ pnpm dev                     # 本地開發（http://localhost:3000）
 ## 開發階段（依序進行，每階段完成停下確認）
 
 - [x] **Phase 0** — 專案骨架
-- [ ] **Phase 1** — 設計系統 + 元件庫（`/styleguide` 活文件）
-- [ ] **Phase 2** — 資料層（Supabase schema + RLS + Auth + typed data access）
-- [ ] **Phase 3** — 功能畫面（儀表 / 體重 / 飲食 / 運動 / 設定）
-- [ ] **Phase 3.5** — Gemini 2.5 Flash 拍照/文字成分估算
-- [ ] **Phase 4** — 部署（Vercel + Supabase）
+- [x] **Phase 1** — 設計系統 + 元件庫（`/styleguide` 活文件）— Sage 編輯風
+- [x] **Phase 2** — 資料層 + 自訂帳號密碼認證（後改為非 Supabase Auth）
+- [x] **Phase 3** — 功能畫面（儀表 / 體重 / 飲食 / 運動 / 設定）+ 歷史日期導覽
+- [x] **Phase 3.5** — Gemini 2.5 Flash 拍照/文字成分估算
+- [x] **Phase 4** — 部署上線（Vercel + GitHub Actions CD）→ https://dietlife.vercel.app

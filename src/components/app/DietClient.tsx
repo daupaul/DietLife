@@ -231,7 +231,6 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
             ref={fileRef}
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={onPhoto}
           />
