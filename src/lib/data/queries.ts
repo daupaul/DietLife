@@ -1,5 +1,4 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUser } from "@/lib/auth/user";
 import type {
@@ -10,44 +9,48 @@ import type {
   WeightLog,
 } from "@/types/db";
 
+// All data access is server-side via the service role, scoped by the session
+// user id (no Supabase Auth / no client-side Supabase calls). RLS stays on as
+// a backstop. Never select password_hash or gemini_api_key toward the client.
 const PROFILE_COLUMNS =
   "id, gender, age, height, weight, activity_level, daily_calorie_goal, protein_goal, carbs_goal, fat_goal, fiber_goal, sodium_goal, created_at, updated_at";
 
 interface DateRange {
-  from?: string; // ISO (inclusive)
-  to?: string; // ISO (exclusive)
+  from?: string;
+  to?: string;
   limit?: number;
 }
 
-/** The current user's profile (without the server-only gemini key). */
-export async function getProfile(): Promise<Profile | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .select(PROFILE_COLUMNS)
-    .single();
-  if (error) return null;
-  return data as Profile;
+async function uid(): Promise<string | null> {
+  const user = await getUser();
+  return user?.id ?? null;
 }
 
-/** Whether the user has set a Gemini API key — without exposing the value. */
+export async function getProfile(): Promise<Profile | null> {
+  const id = await uid();
+  if (!id) return null;
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select(PROFILE_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+  return (data as Profile) ?? null;
+}
+
 export async function hasGeminiApiKey(): Promise<boolean> {
-  const user = await getUser();
-  if (!user) return false;
+  const id = await uid();
+  if (!id) return false;
   const admin = createAdminClient();
   const { data } = await admin
     .from("user_secrets")
     .select("gemini_api_key")
-    .eq("user_id", user.id)
+    .eq("user_id", id)
     .maybeSingle();
   return Boolean(data?.gemini_api_key);
 }
 
-/**
- * The user's Gemini API key — server-only (admin client reads user_secrets,
- * which is unreadable by client roles via RLS). Used by the Gemini Server
- * Action in Phase 3.5. Never return this to the client.
- */
+/** The user's Gemini API key — server-only. Used by the Gemini action. */
 export async function getGeminiApiKey(userId: string): Promise<string | null> {
   const admin = createAdminClient();
   const { data } = await admin
@@ -59,48 +62,54 @@ export async function getGeminiApiKey(userId: string): Promise<string | null> {
 }
 
 export async function listWeightLogs(limit = 90): Promise<WeightLog[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const id = await uid();
+  if (!id) return [];
+  const admin = createAdminClient();
+  const { data } = await admin
     .from("weight_logs")
     .select("*")
+    .eq("user_id", id)
     .order("datetime", { ascending: false })
     .limit(limit);
-  if (error) return [];
-  return data as WeightLog[];
+  return (data as WeightLog[]) ?? [];
 }
 
 export async function listDietLogs(range: DateRange = {}): Promise<DietLog[]> {
-  const supabase = await createClient();
-  let q = supabase.from("diet_logs").select("*");
+  const id = await uid();
+  if (!id) return [];
+  const admin = createAdminClient();
+  let q = admin.from("diet_logs").select("*").eq("user_id", id);
   if (range.from) q = q.gte("datetime", range.from);
   if (range.to) q = q.lt("datetime", range.to);
   q = q.order("datetime", { ascending: false });
   if (range.limit) q = q.limit(range.limit);
-  const { data, error } = await q;
-  if (error) return [];
-  return data as DietLog[];
+  const { data } = await q;
+  return (data as DietLog[]) ?? [];
 }
 
 export async function listExerciseLogs(
   range: DateRange = {},
 ): Promise<ExerciseLog[]> {
-  const supabase = await createClient();
-  let q = supabase.from("exercise_logs").select("*");
+  const id = await uid();
+  if (!id) return [];
+  const admin = createAdminClient();
+  let q = admin.from("exercise_logs").select("*").eq("user_id", id);
   if (range.from) q = q.gte("datetime", range.from);
   if (range.to) q = q.lt("datetime", range.to);
   q = q.order("datetime", { ascending: false });
   if (range.limit) q = q.limit(range.limit);
-  const { data, error } = await q;
-  if (error) return [];
-  return data as ExerciseLog[];
+  const { data } = await q;
+  return (data as ExerciseLog[]) ?? [];
 }
 
 export async function listFavoriteFoods(): Promise<FavoriteFood[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const id = await uid();
+  if (!id) return [];
+  const admin = createAdminClient();
+  const { data } = await admin
     .from("favorite_foods")
     .select("*")
+    .eq("user_id", id)
     .order("created_at", { ascending: false });
-  if (error) return [];
-  return data as FavoriteFood[];
+  return (data as FavoriteFood[]) ?? [];
 }

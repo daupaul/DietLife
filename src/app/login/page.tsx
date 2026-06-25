@@ -42,12 +42,13 @@ export default function LoginPage() {
         <Card size="lg">
           <form action={action} className="space-y-4">
             <Input
-              name="email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              label="電子郵件"
-              placeholder="you@example.com"
+              name="username"
+              type="text"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              label="帳號"
+              placeholder="英文、數字、底線"
               required
             />
             <Input
@@ -55,8 +56,8 @@ export default function LoginPage() {
               type="password"
               autoComplete={isSignin ? "current-password" : "new-password"}
               label="密碼"
-              placeholder="至少 8 碼"
-              minLength={8}
+              placeholder="至少 6 碼"
+              minLength={6}
               required
             />
 

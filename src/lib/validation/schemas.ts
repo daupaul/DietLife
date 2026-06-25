@@ -13,8 +13,13 @@ const category = z.enum(MEAL_CATEGORIES).nullable().optional();
 
 // ── auth ────────────────────────────────────────────────────────
 export const credentialsSchema = z.object({
-  email: z.string().email("請輸入有效的電子郵件").max(254),
-  password: z.string().min(8, "密碼至少 8 碼").max(72),
+  username: z
+    .string()
+    .trim()
+    .min(3, "帳號至少 3 個字")
+    .max(30, "帳號最多 30 個字")
+    .regex(/^[a-zA-Z0-9_]+$/, "帳號只能用英文、數字、底線"),
+  password: z.string().min(6, "密碼至少 6 碼").max(72),
 });
 export type CredentialsInput = z.infer<typeof credentialsSchema>;
 

@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getUser } from "@/lib/auth/user";
 import {
   dietLogSchema,
   exerciseLogSchema,
@@ -17,15 +17,12 @@ import type { ActionResult } from "./types";
 const SAVE_FAILED = "儲存失敗，請稍後再試";
 const NOT_AUTHED = "請先登入";
 
-async function getAuthed() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return { supabase, user };
+async function authed() {
+  const user = await getUser();
+  if (!user) return null;
+  return { userId: user.id, admin: createAdminClient() };
 }
 
-/** Generic helper: first Zod issue message. */
 function firstError(message?: string) {
   return message ?? "輸入無效";
 }
@@ -36,13 +33,13 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { ok: false, error: firstError(parsed.error.issues[0]?.message) };
   }
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase
+  const { error } = await ctx.admin
     .from("profiles")
     .update(parsed.data)
-    .eq("id", user.id);
+    .eq("id", ctx.userId);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/settings");
@@ -50,20 +47,19 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
   return { ok: true };
 }
 
-// ── gemini key (server-only column; written via admin client) ───
+// ── gemini key (server-only table) ──────────────────────────────
 export async function setGeminiApiKey(input: unknown): Promise<ActionResult> {
   const parsed = geminiKeySchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: firstError(parsed.error.issues[0]?.message) };
   }
-  const { user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const admin = createAdminClient();
-  const { error } = await admin
+  const { error } = await ctx.admin
     .from("user_secrets")
     .upsert(
-      { user_id: user.id, gemini_api_key: parsed.data.apiKey },
+      { user_id: ctx.userId, gemini_api_key: parsed.data.apiKey },
       { onConflict: "user_id" },
     );
   if (error) return { ok: false, error: SAVE_FAILED };
@@ -73,14 +69,13 @@ export async function setGeminiApiKey(input: unknown): Promise<ActionResult> {
 }
 
 export async function clearGeminiApiKey(): Promise<ActionResult> {
-  const { user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const admin = createAdminClient();
-  const { error } = await admin
+  const { error } = await ctx.admin
     .from("user_secrets")
     .delete()
-    .eq("user_id", user.id);
+    .eq("user_id", ctx.userId);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/settings");
@@ -93,11 +88,11 @@ export async function addWeightLog(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { ok: false, error: firstError(parsed.error.issues[0]?.message) };
   }
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase.from("weight_logs").insert({
-    user_id: user.id,
+  const { error } = await ctx.admin.from("weight_logs").insert({
+    user_id: ctx.userId,
     datetime: new Date(parsed.data.datetime).toISOString(),
     weight: parsed.data.weight,
   });
@@ -111,14 +106,14 @@ export async function addWeightLog(input: unknown): Promise<ActionResult> {
 export async function deleteWeightLog(id: unknown): Promise<ActionResult> {
   const parsed = idSchema.safeParse(id);
   if (!parsed.success) return { ok: false, error: "無效的項目" };
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase
+  const { error } = await ctx.admin
     .from("weight_logs")
     .delete()
     .eq("id", parsed.data)
-    .eq("user_id", user.id);
+    .eq("user_id", ctx.userId);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/weight");
@@ -132,12 +127,12 @@ export async function addDietLog(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { ok: false, error: firstError(parsed.error.issues[0]?.message) };
   }
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
   const { datetime, ...rest } = parsed.data;
-  const { error } = await supabase.from("diet_logs").insert({
-    user_id: user.id,
+  const { error } = await ctx.admin.from("diet_logs").insert({
+    user_id: ctx.userId,
     datetime: new Date(datetime).toISOString(),
     ...rest,
   });
@@ -151,14 +146,14 @@ export async function addDietLog(input: unknown): Promise<ActionResult> {
 export async function deleteDietLog(id: unknown): Promise<ActionResult> {
   const parsed = idSchema.safeParse(id);
   if (!parsed.success) return { ok: false, error: "無效的項目" };
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase
+  const { error } = await ctx.admin
     .from("diet_logs")
     .delete()
     .eq("id", parsed.data)
-    .eq("user_id", user.id);
+    .eq("user_id", ctx.userId);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/diet");
@@ -172,12 +167,12 @@ export async function addExerciseLog(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { ok: false, error: firstError(parsed.error.issues[0]?.message) };
   }
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
   const { datetime, ...rest } = parsed.data;
-  const { error } = await supabase.from("exercise_logs").insert({
-    user_id: user.id,
+  const { error } = await ctx.admin.from("exercise_logs").insert({
+    user_id: ctx.userId,
     datetime: new Date(datetime).toISOString(),
     ...rest,
   });
@@ -191,14 +186,14 @@ export async function addExerciseLog(input: unknown): Promise<ActionResult> {
 export async function deleteExerciseLog(id: unknown): Promise<ActionResult> {
   const parsed = idSchema.safeParse(id);
   if (!parsed.success) return { ok: false, error: "無效的項目" };
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase
+  const { error } = await ctx.admin
     .from("exercise_logs")
     .delete()
     .eq("id", parsed.data)
-    .eq("user_id", user.id);
+    .eq("user_id", ctx.userId);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/exercise");
@@ -212,12 +207,12 @@ export async function addFavoriteFood(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { ok: false, error: firstError(parsed.error.issues[0]?.message) };
   }
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase
+  const { error } = await ctx.admin
     .from("favorite_foods")
-    .insert({ user_id: user.id, ...parsed.data });
+    .insert({ user_id: ctx.userId, ...parsed.data });
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/diet");
@@ -227,14 +222,14 @@ export async function addFavoriteFood(input: unknown): Promise<ActionResult> {
 export async function deleteFavoriteFood(id: unknown): Promise<ActionResult> {
   const parsed = idSchema.safeParse(id);
   if (!parsed.success) return { ok: false, error: "無效的項目" };
-  const { supabase, user } = await getAuthed();
-  if (!user) return { ok: false, error: NOT_AUTHED };
+  const ctx = await authed();
+  if (!ctx) return { ok: false, error: NOT_AUTHED };
 
-  const { error } = await supabase
+  const { error } = await ctx.admin
     .from("favorite_foods")
     .delete()
     .eq("id", parsed.data)
-    .eq("user_id", user.id);
+    .eq("user_id", ctx.userId);
   if (error) return { ok: false, error: SAVE_FAILED };
 
   revalidatePath("/diet");

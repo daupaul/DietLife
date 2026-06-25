@@ -12,17 +12,13 @@
 
 ---
 
-## 1. Supabase Auth 設定（朋友的 Supabase Dashboard）
-Authentication → **URL Configuration**：
-- **Site URL** 設為正式網址（部署後拿到，例如 `https://dietlife.vercel.app`）。
-- **Redirect URLs** 也加上同一個網址。
+## 1. 認證（不需設定 Supabase Auth）
+本專案是**自訂「使用者名稱 + 密碼」**認證（密碼 scrypt 雜湊存在 `app_users`，
+session 走簽章 JWT cookie），**完全不使用 Supabase Auth**。Supabase 只當資料庫，
+全部存取在 server 端用 service role 完成。
 
-Authentication → **Providers → Email**：
-- 本專案用 **Email + 密碼**登入。為了讓使用者註冊後能直接登入，建議**關閉
-  「Confirm email」**（否則要收確認信，且確認連結會指向 Site URL）。
-  - 若保留 Email 確認：務必先設好上面的 Site URL，否則確認連結會壞。
-
-> 註：登入是密碼制、不走 OAuth/magic-link，所以不需要額外 callback 路由。
+→ 所以 **不用**設定 Supabase 的 Site URL / Email 確認 / Redirect URLs。
+只要環境變數有 `SESSION_SECRET`（見下）即可。
 
 ---
 
@@ -39,12 +35,12 @@ Authentication → **Providers → Email**：
 
 | Name | 值 | 範圍 | 機密？ |
 | --- | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` | All | 否（可公開） |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_…` | All | 否（可公開） |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` | All | 否 |
 | `SUPABASE_SERVICE_ROLE_KEY` | `sb_secret_…` | All | **是，機密** |
+| `SESSION_SECRET` | 32+ 隨機 bytes（`node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`） | All | **是，機密** |
 
-來源：Supabase → Project Settings → **API**（publishable / secret keys）。
-本機 `.env.local` 裡也有同樣三個值可對照（`.env.local` 不會進 git）。
+來源：Supabase URL/secret 在 Project Settings → **API**；`SESSION_SECRET` 自己產一組。
+本機 `.env.local` 有同樣的值可對照（不進 git）。註：不再需要 anon key（前端不直接連 Supabase）。
 
 > ⚠️ `SUPABASE_SERVICE_ROLE_KEY` 是機密：只會在 server 端使用，絕不可設成
 > `NEXT_PUBLIC_*`、絕不可寫進程式碼或 commit。
@@ -56,7 +52,7 @@ Authentication → **Providers → Email**：
 2. 回到 **步驟 1** 把 Supabase 的 Site URL 改成這個正式網址（若部署後才知道）。
 3. 驗收清單：
    - [ ] 打開網址 → 自動導到 `/login`
-   - [ ] 註冊新帳號 → 能登入（沒卡在收信）
+   - [ ] 用帳號+密碼註冊 → 立即登入（自訂認證，不寄信）
    - [ ] 設定頁填基本資料 → 儀表板算出 BMR/TDEE/剩餘熱量
    - [ ] 飲食/運動/體重 能新增、刪除、看歷史
    - [ ] 飲食頁「智慧估算」：先在設定頁存自己的 Gemini key → 文字/拍照估算
