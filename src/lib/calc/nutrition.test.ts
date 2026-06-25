@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   achievementPct,
   bmr,
+  caloriesBurned,
   dynamicTdee,
   remainingCalories,
   remainingNutrient,
@@ -68,6 +69,16 @@ describe("remainingNutrient", () => {
   });
   it("over goal clamps to 0", () => {
     expect(remainingNutrient(120, 200)).toBe(0);
+  });
+});
+
+describe("caloriesBurned", () => {
+  it("METs × kg × hours", () => {
+    // 6 METs × 70kg × 1h = 420
+    expect(caloriesBurned(6, 70, 60)).toBe(420);
+  });
+  it("half hour halves it", () => {
+    expect(caloriesBurned(4, 72.5, 30)).toBeCloseTo(145, 5);
   });
 });
 

@@ -3,7 +3,7 @@ import { DeleteButton } from "@/components/app/DeleteButton";
 import { ExerciseForm } from "@/components/app/ExerciseForm";
 import { Card, SectionHeader } from "@/components/ui";
 import { deleteExerciseLog } from "@/lib/data/actions";
-import { listExerciseLogs } from "@/lib/data/queries";
+import { getProfile, listExerciseLogs } from "@/lib/data/queries";
 import {
   dayRangeForDateStr,
   formatDayLabel,
@@ -24,11 +24,14 @@ export default async function ExercisePage({
   const isToday = date === today;
   const { from, to } = dayRangeForDateStr(date);
 
-  const logs = await listExerciseLogs({ from, to });
+  const [logs, profile] = await Promise.all([
+    listExerciseLogs({ from, to }),
+    getProfile(),
+  ]);
 
   return (
     <div className="space-y-4">
-      <ExerciseForm />
+      <ExerciseForm weightKg={profile?.weight ?? null} />
 
       <DayNav
         label={formatDayLabel(date)}

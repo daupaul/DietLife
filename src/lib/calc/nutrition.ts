@@ -55,6 +55,15 @@ export function remainingNutrient(goal: number, consumed: number): number {
   return Math.max(0, goal - consumed);
 }
 
+/** Calories burned = METs × bodyweight(kg) × duration(hours). */
+export function caloriesBurned(
+  mets: number,
+  weightKg: number,
+  durationMin: number,
+): number {
+  return mets * weightKg * (durationMin / 60);
+}
+
 /** Sum a numeric field across rows (e.g. today's calories / burn). */
 export function sumField<T>(rows: readonly T[], key: keyof T): number {
   return rows.reduce((acc, row) => {

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, Noto_Sans_TC, Noto_Serif_TC } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/app/ServiceWorkerRegister";
 import "./globals.css";
 
 // Body sans: Inter (Latin/numerals) + Noto Sans TC (Traditional Chinese).
@@ -33,6 +34,12 @@ const notoSerifTC = Noto_Serif_TC({
 export const metadata: Metadata = {
   title: "DietLife 飲控生活",
   description: "雲端同步的飲食控制與體重追蹤，手機優先。",
+  // PWA / iOS standalone
+  appleWebApp: {
+    capable: true,
+    title: "DietLife",
+    statusBarStyle: "default",
+  },
 };
 
 // Mobile-first: cover the iOS safe area (notch / home indicator). We do NOT
@@ -57,6 +64,7 @@ export default function RootLayout({
     >
       <body className="bg-background text-foreground flex min-h-full flex-col">
         {children}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

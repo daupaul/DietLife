@@ -27,12 +27,12 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 const TIMEOUT_MS = 30_000;
 const MAX_ATTEMPTS = 3;
 
-const SYSTEM =
+const NUTRITION_SYSTEM =
   "你是專業營養估算助手。根據使用者提供的食物（文字描述或照片），估算「單份」的營養成分。" +
   "單位：calories=大卡(kcal)、protein/carbs/fat/fiber=公克(g)、sodium=毫克(mg)。" +
   "name 用簡短的中文食物名稱。數值用合理估計的整數或一位小數，不確定時給最佳估計，不要回 0。只輸出 JSON。";
 
-const SCHEMA = {
+const NUTRITION_SCHEMA = {
   type: "OBJECT",
   properties: {
     name: { type: "STRING" },
@@ -46,19 +46,36 @@ const SCHEMA = {
   required: ["name", "calories", "protein", "carbs", "fat", "fiber", "sodium"],
 } as const;
 
+const METS_SYSTEM =
+  "你是運動生理專家。根據使用者描述的運動項目，估算其 METs（代謝當量）數值。" +
+  "一般範圍 2–12（如散步約 3、慢跑約 7、高強度間歇約 10）。只輸出 JSON。";
+
+const METS_SCHEMA = {
+  type: "OBJECT",
+  properties: { mets: { type: "NUMBER" } },
+  required: ["mets"],
+} as const;
+
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 type Part =
   | { text: string }
   | { inline_data: { mime_type: string; data: string } };
 
-async function call(apiKey: string, parts: Part[]): Promise<NutritionEstimate> {
+type Schema = Record<string, unknown>;
+
+async function call(
+  apiKey: string,
+  parts: Part[],
+  system: string,
+  schema: Schema,
+): Promise<unknown> {
   const body = {
     contents: [{ parts }],
-    systemInstruction: { parts: [{ text: SYSTEM }] },
+    systemInstruction: { parts: [{ text: system }] },
     generationConfig: {
       responseMimeType: "application/json",
-      responseSchema: SCHEMA,
+      responseSchema: schema,
       temperature: 0.2,
     },
   };
@@ -102,7 +119,7 @@ async function call(apiKey: string, parts: Part[]): Promise<NutritionEstimate> {
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new GeminiError("unknown", "無法解析回應");
     try {
-      return JSON.parse(text) as NutritionEstimate;
+      return JSON.parse(text);
     } catch {
       throw new GeminiError("unknown", "回應格式錯誤");
     }
@@ -111,20 +128,44 @@ async function call(apiKey: string, parts: Part[]): Promise<NutritionEstimate> {
   throw lastErr;
 }
 
-export function estimateFromText(
+export async function estimateFromText(
   apiKey: string,
   description: string,
 ): Promise<NutritionEstimate> {
-  return call(apiKey, [{ text: `食物描述：${description}` }]);
+  return (await call(
+    apiKey,
+    [{ text: `食物描述：${description}` }],
+    NUTRITION_SYSTEM,
+    NUTRITION_SCHEMA,
+  )) as NutritionEstimate;
 }
 
-export function estimateFromImage(
+export async function estimateFromImage(
   apiKey: string,
   base64: string,
   mimeType: string,
 ): Promise<NutritionEstimate> {
-  return call(apiKey, [
-    { inline_data: { mime_type: mimeType, data: base64 } },
-    { text: "請估算這張食物照片的單份營養成分。" },
-  ]);
+  return (await call(
+    apiKey,
+    [
+      { inline_data: { mime_type: mimeType, data: base64 } },
+      { text: "請估算這張食物照片的單份營養成分。" },
+    ],
+    NUTRITION_SYSTEM,
+    NUTRITION_SCHEMA,
+  )) as NutritionEstimate;
+}
+
+/** Estimate METs for an arbitrary exercise description. */
+export async function estimateMets(
+  apiKey: string,
+  activity: string,
+): Promise<number> {
+  const out = (await call(
+    apiKey,
+    [{ text: `運動項目：${activity}` }],
+    METS_SYSTEM,
+    METS_SCHEMA,
+  )) as { mets?: number };
+  return typeof out.mets === "number" ? out.mets : 0;
 }

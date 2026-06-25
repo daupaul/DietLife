@@ -8,9 +8,14 @@ import {
   GeminiError,
   estimateFromImage,
   estimateFromText,
+  estimateMets,
   type NutritionEstimate,
 } from "@/lib/gemini/estimate";
 import type { ActionResult } from "./types";
+
+const activitySchema = z.object({
+  activity: z.string().trim().min(1, "請輸入運動項目").max(100),
+});
 
 const textSchema = z.object({
   description: z.string().trim().min(1, "請輸入食物描述").max(500),
@@ -79,6 +84,26 @@ export async function estimateFoodFromImage(
       parsed.data.mimeType,
     );
     return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: mapError(e) };
+  }
+}
+
+export async function estimateExerciseMets(
+  input: unknown,
+): Promise<ActionResult<{ mets: number }>> {
+  const parsed = activitySchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "輸入無效" };
+
+  const r = await ready();
+  if ("error" in r) return { ok: false, error: r.error };
+
+  try {
+    const mets = await estimateMets(r.key, parsed.data.activity);
+    if (!mets || mets <= 0)
+      return { ok: false, error: "無法估算此運動，請手動輸入消耗" };
+    return { ok: true, data: { mets } };
   } catch (e) {
     return { ok: false, error: mapError(e) };
   }
