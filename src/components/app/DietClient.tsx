@@ -39,6 +39,36 @@ type FormState = typeof EMPTY;
 
 const num = (v: string) => (v === "" ? 0 : v);
 
+/** Load an image file, downscale to maxDim, return JPEG base64 (no prefix). */
+function resizeToBase64(
+  file: File,
+  maxDim: number,
+  quality: number,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("no canvas context"));
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality).split(",")[1] ?? "");
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("image load failed"));
+    };
+    img.src = url;
+  });
+}
+
 export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -90,24 +120,22 @@ export function DietClient({ favorites }: { favorites: FavoriteFood[] }) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast({ type: "error", message: "僅支援 JPG / PNG / WebP" });
+    if (!file.type.startsWith("image/")) {
+      toast({ type: "error", message: "請選擇圖片檔" });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ type: "error", message: "圖片需小於 5MB" });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = String(reader.result).split(",")[1] ?? "";
-      startAi(async () =>
+    startAi(async () => {
+      try {
+        // Downscale in the browser so the payload stays well under the Server
+        // Action body limit (and Gemini gets a cheaper, sufficient image).
+        const base64 = await resizeToBase64(file, 1024, 0.8);
         handleEstimate(
-          await estimateFoodFromImage({ mimeType: file.type, base64 }),
-        ),
-      );
-    };
-    reader.readAsDataURL(file);
+          await estimateFoodFromImage({ mimeType: "image/jpeg", base64 }),
+        );
+      } catch {
+        toast({ type: "error", message: "圖片處理失敗，請換一張試試" });
+      }
+    });
   };
 
   const set =
