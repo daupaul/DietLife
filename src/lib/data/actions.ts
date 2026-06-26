@@ -12,6 +12,7 @@ import {
   profileSchema,
   weightLogSchema,
 } from "@/lib/validation/schemas";
+import { taipeiLocalToUtcISO } from "@/lib/datetime";
 import type { ActionResult } from "./types";
 
 const SAVE_FAILED = "儲存失敗，請稍後再試";
@@ -93,7 +94,7 @@ export async function addWeightLog(input: unknown): Promise<ActionResult> {
 
   const { error } = await ctx.admin.from("weight_logs").insert({
     user_id: ctx.userId,
-    datetime: new Date(parsed.data.datetime).toISOString(),
+    datetime: taipeiLocalToUtcISO(parsed.data.datetime),
     weight: parsed.data.weight,
   });
   if (error) return { ok: false, error: SAVE_FAILED };
@@ -133,7 +134,7 @@ export async function addDietLog(input: unknown): Promise<ActionResult> {
   const { datetime, ...rest } = parsed.data;
   const { error } = await ctx.admin.from("diet_logs").insert({
     user_id: ctx.userId,
-    datetime: new Date(datetime).toISOString(),
+    datetime: taipeiLocalToUtcISO(datetime),
     ...rest,
   });
   if (error) return { ok: false, error: SAVE_FAILED };
@@ -173,7 +174,7 @@ export async function addExerciseLog(input: unknown): Promise<ActionResult> {
   const { datetime, ...rest } = parsed.data;
   const { error } = await ctx.admin.from("exercise_logs").insert({
     user_id: ctx.userId,
-    datetime: new Date(datetime).toISOString(),
+    datetime: taipeiLocalToUtcISO(datetime),
     ...rest,
   });
   if (error) return { ok: false, error: SAVE_FAILED };

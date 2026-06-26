@@ -25,6 +25,19 @@ export function taipeiDayRange(nowMs: number = Date.now()): {
   };
 }
 
+/**
+ * Convert a Taipei wall-clock string "YYYY-MM-DDTHH:mm" to a UTC ISO string.
+ * The input represents Taipei time (UTC+8) regardless of the server timezone —
+ * so we must NOT use `new Date(local)` (that parses in the server's tz, which
+ * is UTC on Vercel and would shift everything by +8).
+ */
+export function taipeiLocalToUtcISO(local: string): string {
+  const [datePart, timePart = "00:00"] = local.split("T");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm] = timePart.split(":").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, hh, mm) - TPE_OFFSET_MS).toISOString();
+}
+
 /** Current Taipei wall time as a datetime-local string "YYYY-MM-DDTHH:mm". */
 export function taipeiNowInput(nowMs: number = Date.now()): string {
   const s = new Date(nowMs + TPE_OFFSET_MS);

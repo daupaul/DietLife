@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { formatMMDD, taipeiDayRange, taipeiNowInput } from "./datetime";
+import {
+  formatMMDD,
+  taipeiDayRange,
+  taipeiLocalToUtcISO,
+  taipeiNowInput,
+} from "./datetime";
 
 describe("taipeiDayRange", () => {
   it("brackets the Taipei day for an afternoon-UTC instant", () => {
@@ -20,6 +25,21 @@ describe("taipeiNowInput", () => {
   it("formats Taipei wall time as YYYY-MM-DDTHH:mm", () => {
     expect(taipeiNowInput(Date.parse("2026-06-25T02:05:00Z"))).toBe(
       "2026-06-25T10:05",
+    );
+  });
+});
+
+describe("taipeiLocalToUtcISO", () => {
+  it("treats the input as Taipei (UTC+8), not server-local", () => {
+    // 08:00 Taipei = 00:00 UTC (the bug stored it as 08:00 UTC on Vercel)
+    expect(taipeiLocalToUtcISO("2026-06-26T08:00")).toBe(
+      "2026-06-26T00:00:00.000Z",
+    );
+  });
+  it("handles day rollover", () => {
+    // 02:00 Taipei = 18:00 previous-day UTC
+    expect(taipeiLocalToUtcISO("2026-06-26T02:00")).toBe(
+      "2026-06-25T18:00:00.000Z",
     );
   });
 });
